@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
     },
     email: {
         type: String,
+        unique: true,
         required: true,
         trim: true,
         lowercase: true,
@@ -41,6 +42,27 @@ const userSchema = new mongoose.Schema({
     }
 })
 
+/**
+ * This method verify the user login.
+ * @param {string} email Email Id of user
+ * @param {String} password Password of user
+ */
+userSchema.statics.verifyUserLogin = async (email, password) => {
+    const user = await User.findOne({ email });
+    if(!user){
+        throw new Error('No registered Id.');
+    }
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if(!passwordMatch){
+        throw new Error('Wrong Credentials');
+    }
+    return user;
+}
+
+/**
+ * This is used while user craete or edit its details and if he chages its password then it is 
+ * encrypted and then stored in database. 
+ */
 userSchema.pre('save', async function (next) {
     const user = this
 

@@ -14,6 +14,16 @@ router.post('/users', async (req, res) => {
     }
 })
 
+// API Route: Login of the user
+router.post('/users/login', async (req, res) => {
+    try {
+        const userData = await User.verifyUserLogin(req.body.email, req.body.password);
+        res.status(200).send(userData);
+    } catch (error) {
+        res.send(400);
+    }
+})
+
 // API Route: Find Users
 router.get('/users', async (req, res) => {
     try {
