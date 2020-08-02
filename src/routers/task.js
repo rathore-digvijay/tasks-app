@@ -2,6 +2,7 @@ const express = require('express')
 const Task = require('../models/task')
 const router = new express.Router()
 
+// API Route: Create New Task
 router.post('/tasks', async (req, res) => {
     const task = new Task(req.body)
 
@@ -13,6 +14,7 @@ router.post('/tasks', async (req, res) => {
     }
 })
 
+// API Route: Get Tasks
 router.get('/tasks', async (req, res) => {
     try {
         const tasks = await Task.find({})
@@ -22,6 +24,7 @@ router.get('/tasks', async (req, res) => {
     }
 })
 
+// API Route: Get specific task
 router.get('/tasks/:id', async (req, res) => {
     const _id = req.params.id
 
@@ -38,6 +41,7 @@ router.get('/tasks/:id', async (req, res) => {
     }
 })
 
+// API Route: Update Specific task
 router.patch('/tasks/:id', async (req, res) => {
     const updates = Object.keys(req.body)
     const allowedUpdates = ['description', 'completed']
@@ -63,6 +67,7 @@ router.patch('/tasks/:id', async (req, res) => {
     }
 })
 
+// API Route: Delete Specific Task
 router.delete('/tasks/:id', async (req, res) => {
     try {
         const task = await Task.findByIdAndDelete(req.params.id)
