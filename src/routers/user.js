@@ -1,5 +1,6 @@
 const express = require('express')
 const User = require('../models/user')
+const auth = require('../middleware/auth.js');
 const router = new express.Router()
 
 // API Route: Create user
@@ -7,8 +8,9 @@ router.post('/users', async (req, res) => {
     const user = new User(req.body)
 
     try {
-        await user.save()
-        res.status(201).send(user)
+        await user.save();
+        const token = await user.generateAuthToken();
+        res.status(201).send({ user, token });
     } catch (e) {
         res.status(400).send(e)
     }
@@ -18,20 +20,17 @@ router.post('/users', async (req, res) => {
 router.post('/users/login', async (req, res) => {
     try {
         const userData = await User.verifyUserLogin(req.body.email, req.body.password);
-        res.status(200).send(userData);
+        const token = await userData.generateAuthToken();
+        res.send({ userData, token });
     } catch (error) {
-        res.send(400);
+        console.log(error);
+        res.sendStatus(400);
     }
 })
 
 // API Route: Find Users
-router.get('/users', async (req, res) => {
-    try {
-        const users = await User.find({})
-        res.send(users)
-    } catch (e) {
-        res.status(500).send()
-    }
+router.get('/users/me', auth, async (req, res) => {
+    res.send(req.user);
 })
 
 // API Route: Find specific user by Id

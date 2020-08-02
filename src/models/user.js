@@ -1,7 +1,11 @@
-const mongoose = require('mongoose')
-const validator = require('validator')
-const bcrypt = require('bcryptjs')
+const mongoose = require('mongoose');
+const validator = require('validator');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
+/**
+ * Schema of the user.
+ */
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -39,11 +43,26 @@ const userSchema = new mongoose.Schema({
                 throw new Error('Age must be a postive number')
             }
         }
-    }
+    },
+    tokens: [{
+        token: {
+            type: String,
+            required: true
+        }
+    }]
 })
 
+userSchema.methods.generateAuthToken = async function () {
+    const self = this;
+    const secretKey = process.env.JWT_SECRET_KEY || "DigvijayDeveloper";
+    const authToken = jwt.sign({_id: self._id.toString()}, secretKey);
+    self.tokens = self.tokens.concat({token: authToken});
+    await self.save();
+    return authToken;
+}
+
 /**
- * This method verify the user login.
+ * This method verify the user login. This is the model method.
  * @param {string} email Email Id of user
  * @param {String} password Password of user
  */
