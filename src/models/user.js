@@ -52,6 +52,23 @@ const userSchema = new mongoose.Schema({
     }]
 })
 
+/**
+ * This method is used as public profile for the user called when we send the profile data 
+ * back to the client.
+ */
+userSchema.methods.toJSON = function () {
+    const user = this;
+    const userObject = user.toObject();
+
+    delete userObject.password;
+    delete userObject.tokens;
+
+    return userObject;
+}
+
+/**
+ * This method generate the authToken for the player for every signIn and save in tokens array.
+ */
 userSchema.methods.generateAuthToken = async function () {
     const self = this;
     const secretKey = process.env.JWT_SECRET_KEY || "DigvijayDeveloper";

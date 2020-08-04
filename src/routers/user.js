@@ -26,7 +26,31 @@ router.post('/users/login', async (req, res) => {
         console.log(error);
         res.sendStatus(400);
     }
-})
+});
+
+router.post('/users/logout', auth, async (req, res) => {
+    try {
+        req.user.token = req.user.tokens.filter((token) => {
+            return req.token.token !== req.token;
+        })
+        await req.user.save();
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.log(error)
+        res.sendStatus(500);
+    }
+});
+
+router.post('/users/logoutAll', auth, async (req, res) => {
+    try {
+        req.user.token = [];
+        await req.user.save();
+        res.sendStatus(200);
+    } catch (error) {
+        res.sendStatus(500);
+    }
+});
 
 // API Route: Find Users
 router.get('/users/me', auth, async (req, res) => {
