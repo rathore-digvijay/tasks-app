@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const Task = require('./task');
 
 /**
  * Schema of the user.
@@ -50,6 +51,18 @@ const userSchema = new mongoose.Schema({
             required: true
         }
     }]
+}, {
+    timestamps : true
+})
+
+
+/**
+ * Virtual reference on User Schema
+ */
+userSchema.virtual('tasks', {
+    ref: 'Task',
+    localField: '_id',
+    foreignField: 'owner'
 })
 
 /**
@@ -72,8 +85,8 @@ userSchema.methods.toJSON = function () {
 userSchema.methods.generateAuthToken = async function () {
     const self = this;
     const secretKey = process.env.JWT_SECRET_KEY || "DigvijayDeveloper";
-    const authToken = jwt.sign({_id: self._id.toString()}, secretKey);
-    self.tokens = self.tokens.concat({token: authToken});
+    const authToken = jwt.sign({ _id: self._id.toString() }, secretKey);
+    self.tokens = self.tokens.concat({ token: authToken });
     await self.save();
     return authToken;
 }
@@ -85,11 +98,11 @@ userSchema.methods.generateAuthToken = async function () {
  */
 userSchema.statics.verifyUserLogin = async (email, password) => {
     const user = await User.findOne({ email });
-    if(!user){
+    if (!user) {
         throw new Error('No registered Id.');
     }
     const passwordMatch = await bcrypt.compare(password, user.password);
-    if(!passwordMatch){
+    if (!passwordMatch) {
         throw new Error('Wrong Credentials');
     }
     return user;
@@ -97,7 +110,8 @@ userSchema.statics.verifyUserLogin = async (email, password) => {
 
 /**
  * This is used while user craete or edit its details and if he chages its password then it is 
- * encrypted and then stored in database. 
+ * encrypted and then stored in database.
+ * Hash user password before saving.
  */
 userSchema.pre('save', async function (next) {
     const user = this
@@ -107,6 +121,13 @@ userSchema.pre('save', async function (next) {
     }
 
     next()
+})
+
+
+userSchema.pre('remove', async function (next) {
+    const user = this;
+    await Task.deleteMany({ owner: user._id });
+    next();
 })
 
 const User = mongoose.model('User', userSchema)
