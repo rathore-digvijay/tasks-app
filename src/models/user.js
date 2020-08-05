@@ -57,7 +57,7 @@ const userSchema = new mongoose.Schema({
 
 
 /**
- * Virtual reference on User Schema
+ * Virtual reference on User Schema to use populate
  */
 userSchema.virtual('tasks', {
     ref: 'Task',
