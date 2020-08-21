@@ -1,7 +1,11 @@
-const express = require('express')
+const express = require('express');
+const multer = require('multer');
 const User = require('../models/user')
 const auth = require('../middleware/auth.js');
 const router = new express.Router();
+
+
+
 
 // API Route: Create user
 router.post('/users', async (req, res) => {
@@ -59,6 +63,44 @@ router.get('/users/me', auth, async (req, res) => {
     res.send(req.user);
 })
 
+const upload = multer({
+    limits: {
+        fileSize: 1000000,
+    },
+    fileFilter(req, file, cb) {
+        if (!file.originalname.match(/\.(jpeg|jpg|png)$/)) {
+            return cb(new Error('Please upload a image.'));
+        }
+        cb(undefined, true);
+    }
+})
+
+router.post('/users/me/avatar', auth, upload.single('avatar'), async (req, res) => {
+    req.user.avatar = req.file.buffer;
+    await req.user.save();
+    res.send();
+}, (error, req, res, next) => {
+    res.sendStatus(400).send({ error: error.message })
+})
+
+router.delete('/users/me/avatar', auth, async (req, res) => {
+    req.user.avatar = undefined;
+    await req.user.save()
+    res.send();
+});
+
+router.get('/users/:id/avatar', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user || !user.avatar) {
+            throw new Error();
+        }
+        res.set('Content-Type', 'image/jpg');
+        res.send(user.avatar);
+    } catch (error) {
+        res.sendStatus(404).send();
+    }
+})
 
 // API Route: Update Specific user by Id
 router.patch('/users/me', auth, async (req, res) => {
