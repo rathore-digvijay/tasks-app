@@ -13,7 +13,7 @@ const auth = async (req, res, next) => {
     console.log('Auth middleware');
     try {
         const token = req.header('Authorization').replace('Bearer ', '');
-        const secretKey = process.env.JWT_SECRET_KEY || "DigvijayDeveloper";
+        const secretKey = process.env.JWT_SECRET_KEY;
         const decoded = jwt.verify(token, secretKey);
         const userData = await User.findOne({_id: decoded._id, 'tokens.token': token});
         if(!userData){

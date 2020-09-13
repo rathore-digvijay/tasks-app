@@ -78,6 +78,7 @@ userSchema.methods.toJSON = function () {
 
     delete userObject.password;
     delete userObject.tokens;
+    delete userObject.avatar;
 
     return userObject;
 }
@@ -87,7 +88,7 @@ userSchema.methods.toJSON = function () {
  */
 userSchema.methods.generateAuthToken = async function () {
     const self = this;
-    const secretKey = process.env.JWT_SECRET_KEY || "DigvijayDeveloper";
+    const secretKey = process.env.JWT_SECRET_KEY;
     const authToken = jwt.sign({ _id: self._id.toString() }, secretKey);
     self.tokens = self.tokens.concat({ token: authToken });
     await self.save();
